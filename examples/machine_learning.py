@@ -8,7 +8,12 @@ import numpy as np
 import os
 import sys
 import inspect
-from lstm_pipeline import run_lstm_pipeline
+
+from sklearn.linear_model import Ridge
+from sklearn.linear_model import LinearRegression
+
+from autokeras import StructuredDataRegressor
+
 
 currentdir = os.path.dirname(os.path.abspath(
     inspect.getfile(inspect.currentframe())))
@@ -82,6 +87,16 @@ def prepare_x_and_y(train, test):
     return train_X, train_y, test_X, test_y
 
 
+def prepare_2d_x_and_y(train, test):
+    train_X, train_y = train[:, :-1], train[:, -1]
+    test_X, test_y = test[:, :-1], test[:, -1]
+
+    train_X = train_X.reshape((train_X.shape[0], train_X.shape[1]))
+    test_X = test_X.reshape((test_X.shape[0], test_X.shape[1]))
+
+    return train_X, train_y, test_X, test_y
+
+
 
 def construct_model(train_X, train_y, hidden_neurons, batch_size):
     model = None
@@ -114,7 +129,6 @@ def run_lstm_pipeline(cfg):
     dataset = pd.read_csv('./examples/weather_energy_hourly.csv')
     dataset = dataset[['pressure', 'dewPoint', 'avg_energy']]
     # dataset = impute_columns(dataset)
-    print('here too')
 
     reframed = build_lagged_features(dataset, ['pressure', 'dewPoint'], 'avg_energy', [1,1, cfg['lag_days']])
     reframed = scale(reframed)
@@ -124,6 +138,75 @@ def run_lstm_pipeline(cfg):
     predictions = predict(model, test_X)
     rmse, r2 = calculate_loss(predictions, test_y)
     print(rmse, r2)
+    return r2
+
+
+def run_linear_reg_pipeline(cfg):
+    dataset = pd.read_csv('./examples/weather_energy_hourly.csv')
+    dataset = dataset[['pressure', 'dewPoint', 'avg_energy']]
+    # dataset = impute_columns(dataset)
+
+    reframed = build_lagged_features(dataset, ['pressure', 'dewPoint'], 'avg_energy', [1,1, cfg['lag_days']])
+    reframed = scale(reframed)
+    train, test = split_into_train_test(reframed, 49)
+    train_X, train_y, test_X, test_y = prepare_2d_x_and_y(train, test)
+    print('problem')
+    print(train_X.shape, train_y.shape, test_X.shape, test_y.shape)
+    reg = LinearRegression().fit(train_X, train_y)
+    r2 = reg.score(test_X, test_y)
+    print(r2)
+    return r2
+
+
+def run_ridge_reg_pipeline(cfg):
+    dataset = pd.read_csv('./examples/weather_energy_hourly.csv')
+    dataset = dataset[['pressure', 'dewPoint', 'avg_energy']]
+    # dataset = impute_columns(dataset)
+    print('here too')
+
+    reframed = build_lagged_features(dataset, ['pressure', 'dewPoint'], 'avg_energy', [1,1, cfg['lag_days']])
+    reframed = scale(reframed)
+    train, test = split_into_train_test(reframed, 49)
+    train_X, train_y, test_X, test_y = prepare_2d_x_and_y(train, test)
+    clf = Ridge(alpha=cfg['alpha'])
+    clf.fit(train_X, train_y)
+    r2 = clf.score(test_X, test_y)
+    print(r2)
+    return r2
+
+
+
+def run_autokeras_pipeline(cfg):
+    dataset = pd.read_csv('./examples/weather_energy_hourly.csv')
+    dataset = dataset[['pressure', 'dewPoint', 'avg_energy']]
+    # dataset = impute_columns(dataset)
+
+    reframed = build_lagged_features(dataset, ['pressure', 'dewPoint'], 'avg_energy', [1,1, cfg['lag_days']])
+    reframed = scale(reframed)
+    train, test = split_into_train_test(reframed, 49)
+    train_X, train_y, test_X, test_y = prepare_2d_x_and_y(train, test)
+
+    search = StructuredDataRegressor(max_trials=10, loss='mean_squared_error')
+    search.fit(train_X, train_y, validation_data=(test_X, test_y))
+
+    predictions = search.predict(test_X)
+    rmse, r2 = calculate_loss(predictions, test_y)
+    print(rmse, r2)
+    return r2
+
+def run_pipeline(cfg):
+
+    r2 = 0
+
+    if cfg['algo'] == 'lstm':
+        r2 = run_lstm_pipeline(cfg)
+    elif cfg['algo'] == 'autokeras':
+        r2 = run_autokeras_pipeline(cfg)
+    elif cfg['algo'] == 'linear_reg':
+        r2 = run_linear_reg_pipeline(cfg)
+    elif cfg['algo'] == 'ridge_reg':
+        r2 = run_ridge_reg_pipeline(cfg)
+
     return r2
 
 
@@ -211,7 +294,7 @@ if __name__ == "__main__":
     #                           seed=42)
 
 
-    environment = Environment(run_lstm_pipeline,
+    environment = Environment(run_pipeline,
                               config_space=configuration_space.cs,
                               mem_in_mb=8000,
                               cpu_time_in_s=300000000,

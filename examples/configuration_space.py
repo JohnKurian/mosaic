@@ -9,10 +9,24 @@ from mosaic.mosaic import Search
 
 # Build Configuration Space which defines all parameters and their ranges
 cs = ConfigurationSpace()
-hidden_neurons = UniformIntegerHyperparameter("hidden_neurons", 40, 70, default_value=55)  
-lag_days = UniformIntegerHyperparameter("lag_days", 3, 200, default_value=10)  
-batch_size = UniformIntegerHyperparameter("batch_size", 20, 120, default_value=50) 
-cs.add_hyperparameters([lag_days, batch_size, hidden_neurons])
+
+lag_days = UniformIntegerHyperparameter("lag_days", 3, 200, default_value=10)
+
+algo = CategoricalHyperparameter("algo", ["linear_reg", "ridge_reg", "lstm", "autokeras"])
+
+alpha = UniformFloatHyperparameter("alpha", 0.001, 10.0, default_value=0.1)
+
+cs.add_hyperparameters([algo, alpha, lag_days])
+
+hidden_neurons = UniformIntegerHyperparameter("hidden_neurons", 40, 70, default_value=55)
+batch_size = UniformIntegerHyperparameter("batch_size", 20, 120, default_value=50)
+
+cs.add_hyperparameters([batch_size, hidden_neurons])
+
+cs.add_condition(InCondition(child=alpha, parent=algo, values=["ridge_reg"]))
+
+cs.add_condition(InCondition(child=hidden_neurons, parent=algo, values=["lstm"]))
+cs.add_condition(InCondition(child=batch_size, parent=algo, values=["lstm"]))
 
 
 

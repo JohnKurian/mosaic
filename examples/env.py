@@ -1,5 +1,5 @@
 import numpy as np
-import pynisher
+# import pynisher
 from ConfigSpace.hyperparameters import CategoricalHyperparameter
 
 from mosaic.env import MosaicEnvironment
