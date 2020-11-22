@@ -36,8 +36,8 @@ class Search:
 
     def __init__(self,
                  environment,
-                 time_budget=3600,
-                 verbose=False,
+                 time_budget=36000,
+                 verbose=True,
                  exec_dir=None,
                  bandit_policy=None,
                  seed=1,
