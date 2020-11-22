@@ -124,7 +124,7 @@ def run_lstm_pipeline(cfg):
     predictions = predict(model, test_X)
     rmse, r2 = calculate_loss(predictions, test_y)
     print(rmse, r2)
-    return rmse
+    return r2
 
 
 
