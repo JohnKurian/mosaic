@@ -30,7 +30,6 @@ python examples/machine_learning.py
 ```
 
 ### Citation
-If you are using `mosaic` in a academic presentation, we would appreciate citation
 ```
 @inproceedings{ijcai2019-457,
   title     = {Automated Machine Learning with Monte-Carlo Tree Search},
