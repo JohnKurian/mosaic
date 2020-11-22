@@ -186,7 +186,7 @@ def run_autokeras_pipeline(cfg):
     train, test = split_into_train_test(reframed, 49)
     train_X, train_y, test_X, test_y = prepare_2d_x_and_y(train, test)
 
-    search = StructuredDataRegressor(max_trials=10, loss='mean_squared_error')
+    search = StructuredDataRegressor(max_trials=10, loss='mean_squared_error', overwrite=True)
     search.fit(train_X, train_y, validation_data=(test_X, test_y))
 
     predictions = search.predict(test_X)
@@ -211,72 +211,6 @@ def run_pipeline(cfg):
 
 
 
-
-
-
-
-
-
-
-
-def svm_from_cfg(cfg):
-    """ Creates a SVM based on a configuration and evaluates it on the
-    iris-dataset using cross-validation.
-    Source: https://automl.github.io/SMAC3/master/examples/SMAC4HPO_svm.html
-
-    Parameters:
-    -----------
-    cfg: Configuration (ConfigSpace.ConfigurationSpace.Configuration)
-        Configuration containing the parameters.
-        Configurations are indexable!
-
-    Returns:
-    --------
-    A crossvalidated mean score for the svm on the loaded data-set.
-    """
-    # For deactivated parameters, the configuration stores None-values.
-    # This is not accepted by the SVM, so we remove them.
-    cfg = {k: cfg[k] for k in cfg if cfg[k]}
-    # We translate boolean values:
-    cfg["shrinking"] = True if cfg["shrinking"] == "true" else False
-    # And for gamma, we set it to a fixed value or to "auto" (if used)
-    if "gamma" in cfg:
-        cfg["gamma"] = cfg["gamma_value"] if cfg["gamma"] == "value" else "auto"
-        cfg.pop("gamma_value", None)  # Remove "gamma_value"
-
-    clf = svm.SVC(**cfg, random_state=42)
-
-    scores = cross_val_score(clf, X_train, y_train, cv=5)
-    return np.mean(scores)  # Minimize!
-
-
-
-base_params = {
-    'forecasting_window' : 49,
-    'predictor_column' : 'avg_energy',
-
-    'data_imputation' : 0,
-
-    'feature_wise_lag_days' : [1,1,28],
-
-    'normalize' : False,
-
-    'hyperparameters': {
-        'hidden_neurons' : [40, 70],
-        'lag_days' : [3, 200],
-        'batch_size' : [20, 120]
-    },
-
-    'hidden_neurons' : 50,
-    'lag_days' : 10,
-    'batch_size' : 50,
-
-    'selected_features' : ['pressure', 'dewPoint'],
-
-    'datafile_path' : 'weather_energy_hourly.csv',
-    'model_type': 'lstm',
-    'num_trials': 1000
-}
 
 
 
