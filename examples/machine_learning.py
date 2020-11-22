@@ -213,13 +213,13 @@ if __name__ == "__main__":
 
     environment = Environment(run_lstm_pipeline,
                               config_space=configuration_space.cs,
-                              mem_in_mb=2048,
-                              cpu_time_in_s=30,
+                              mem_in_mb=8000,
+                              cpu_time_in_s=300000000,
                               seed=42)
 
     mosaic = Search(environment=environment,
                     bandit_policy={"policy_name": "uct", "c_ucb": 1.1},
                     coef_progressive_widening=0.6,
-                    verbose=False)
-    best_config, best_score = mosaic.run(nb_simulation=100)
+                    verbose=True)
+    best_config, best_score = mosaic.run(nb_simulation=10000)
     print("Best config: ", best_config, "best score", best_score)
