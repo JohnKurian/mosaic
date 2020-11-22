@@ -5,6 +5,16 @@ from ConfigSpace.hyperparameters import CategoricalHyperparameter
 from mosaic.env import MosaicEnvironment
 
 
+# Flexible integration for any Python script
+import wandb
+
+# 1. Start a W&B run
+wandb.init(project='timeseries-automl')
+
+
+
+
+
 class Environment(MosaicEnvironment):
 
     def __init__(self, eval_func,
@@ -89,5 +99,6 @@ class Environment(MosaicEnvironment):
         res = eval_func(config)
 
         print(config, "score: ", res, end="\n\n")
+        wandb.log({"mosaic_r2": res})
 
         return res
