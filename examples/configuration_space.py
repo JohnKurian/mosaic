@@ -12,7 +12,7 @@ cs = ConfigurationSpace()
 hidden_neurons = UniformIntegerHyperparameter("hidden_neurons", 40, 70, default_value=55)  
 lag_days = UniformIntegerHyperparameter("lag_days", 3, 200, default_value=10)  
 batch_size = UniformIntegerHyperparameter("batch_size", 20, 120, default_value=50) 
-cs.add_hyperparameters([hidden_neurons, lag_days, batch_size]) 
+cs.add_hyperparameters([lag_days, batch_size, hidden_neurons])
 
 
 
