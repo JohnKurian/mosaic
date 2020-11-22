@@ -93,9 +93,7 @@ def calculate_loss(yhat, test_y):
 
 
 def run_lstm_pipeline(cfg):
-    print('im hereeeeeeee')
     dataset = pd.read_csv('weather_energy_hourly.csv')
-    print('im hereeeeeeee 222222222222')
     dataset = dataset['pressure', 'dewPoint', 'avg_energy']
     # dataset = impute_columns(dataset)
     print('here too')
@@ -108,7 +106,7 @@ def run_lstm_pipeline(cfg):
     predictions = predict(model, test_X)
     rmse, r2 = calculate_loss(predictions, test_y)
     print(rmse, r2)
-    return rmse
+    return r2
 
 
 
